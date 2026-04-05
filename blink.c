@@ -7,7 +7,7 @@
 #error "Too many blinks!"
 #endif
 
-#define LEDC_TIMER      ((ledc_timer_t)LEDC_TIMER_MAX - 1)
+#define LEDC_TIMER      ((ledc_timer_t)(LEDC_TIMER_MAX - 1))
 
 #define LEDC_MAX_BRIGHT 1023
 #define LEDC_PULSE      25 // 25 ms.
