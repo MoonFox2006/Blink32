@@ -83,14 +83,14 @@ static void IRAM_ATTR ledc_isr(void *arg) {
       } else if (blinks[channel].mode >= BLINK_PULSE1HZ) {
         if (blinks[channel].mode <= BLINK_PULSE8HZ) { // BLINK_PULSExHZ
           if (duty)
-            ledc_fade(0, blinks[channel].bright, false, 1, LEDC_PULSE, blinks[channel].bright);
+            ledc_fade(channel, blinks[channel].bright, false, 1, LEDC_PULSE, blinks[channel].bright);
           else
-            ledc_fade(0, 0, true, 1, 1000 / (1 << (blinks[channel].mode - BLINK_PULSE1HZ)) - LEDC_PULSE, blinks[channel].bright);
+            ledc_fade(channel, 0, true, 1, 1000 / (1 << (blinks[channel].mode - BLINK_PULSE1HZ)) - LEDC_PULSE, blinks[channel].bright);
         } else if (blinks[channel].mode <= BLINK_TOGGLE8HZ) { // BLINK_TOGGLExHZ
           if (duty)
-            ledc_fade(0, blinks[channel].bright, false, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
+            ledc_fade(channel, blinks[channel].bright, false, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
           else
-            ledc_fade(0, 0, true, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
+            ledc_fade(channel, 0, true, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
         } else if (blinks[channel].mode == BLINK_FADEIN) {
           ledc_fade(channel, 0, true, blinks[channel].bright, LEDC_FADETIME / blinks[channel].bright, 1);
         } else if (blinks[channel].mode == BLINK_FADEOUT) {
