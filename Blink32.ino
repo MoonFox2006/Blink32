@@ -27,7 +27,7 @@
 #define LEDC_BRIGHT   1023
 
 static const char* const MODES[] = {
-  "", "OFF", "ON", "TOGGLE", "1HZ", "2HZ", "4HZ", "8HZ", "FADEIN", "FADEOUT", "BREATH"
+  "", "OFF", "ON", "TOGGLE", "PULSE_1HZ", "PULSE_2HZ", "PULSE_4HZ", "PULSE_8HZ", "TOGGLE_1HZ", "TOGGLE_2HZ", "TOGGLE_4HZ", "TOGGLE_8HZ", "FADEIN", "FADEOUT", "BREATH"
 };
 
 void setup() {

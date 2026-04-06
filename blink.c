@@ -1,4 +1,3 @@
-#include <soc/ledc_reg.h>
 #include <driver/ledc.h>
 #include <esp_attr.h>
 #include "blink.h"
@@ -81,12 +80,17 @@ static void IRAM_ATTR ledc_isr(void *arg) {
       if (blinks[channel].mode == BLINK_ON) {
         if (duty != blinks[channel].bright)
           ledc_write(channel, blinks[channel].bright);
-      } else if (blinks[channel].mode >= BLINK_1HZ) {
-        if (blinks[channel].mode < BLINK_FADEIN) { // BLINK_xHZ
+      } else if (blinks[channel].mode >= BLINK_PULSE1HZ) {
+        if (blinks[channel].mode <= BLINK_PULSE8HZ) { // BLINK_PULSExHZ
           if (duty)
-            ledc_fade(channel, blinks[channel].bright, false, 1, LEDC_PULSE - 1, blinks[channel].bright);
+            ledc_fade(0, blinks[channel].bright, false, 1, LEDC_PULSE, blinks[channel].bright);
           else
-            ledc_fade(channel, 0, true, 1, 1000 / (1 << (blinks[channel].mode - BLINK_1HZ)) - LEDC_PULSE - 1, blinks[channel].bright);
+            ledc_fade(0, 0, true, 1, 1000 / (1 << (blinks[channel].mode - BLINK_PULSE1HZ)) - LEDC_PULSE, blinks[channel].bright);
+        } else if (blinks[channel].mode <= BLINK_TOGGLE8HZ) { // BLINK_TOGGLExHZ
+          if (duty)
+            ledc_fade(0, blinks[channel].bright, false, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
+          else
+            ledc_fade(0, 0, true, 1, 500 / (1 << (blinks[channel].mode - BLINK_TOGGLE1HZ)), blinks[channel].bright);
         } else if (blinks[channel].mode == BLINK_FADEIN) {
           ledc_fade(channel, 0, true, blinks[channel].bright, LEDC_FADETIME / blinks[channel].bright, 1);
         } else if (blinks[channel].mode == BLINK_FADEOUT) {
@@ -174,8 +178,10 @@ void blink_update(uint8_t index, uint8_t mode, uint16_t bright) {
     } else if (mode == BLINK_ON) {
       ledc_write(index, bright);
     } else {
-      if ((mode >= BLINK_1HZ) && (mode <= BLINK_8HZ)) {
-        ledc_fade(index, bright, false, 1, LEDC_PULSE - 1, bright);
+      if ((mode >= BLINK_PULSE1HZ) && (mode <= BLINK_PULSE8HZ)) {
+        ledc_fade(index, bright, false, 1, LEDC_PULSE, bright);
+      } else if ((mode >= BLINK_TOGGLE1HZ) && (mode <= BLINK_TOGGLE8HZ)) {
+        ledc_fade(index, bright, false, 1, 500 / (1 << (mode - BLINK_TOGGLE1HZ)), bright);
       } else if ((mode == BLINK_FADEIN) || (mode == BLINK_BREATH)) {
         ledc_fade(index, 0, true, bright, LEDC_FADETIME / bright, 1);
       } else if (mode == BLINK_FADEOUT) {
@@ -201,12 +207,17 @@ static void IRAM_ATTR ledc_isr(void *arg) {
     if (blink->mode == BLINK_ON) {
       if (duty != blink->bright)
         ledc_write(0, blink->bright);
-    } else if (blink->mode >= BLINK_1HZ) {
-      if (blink->mode < BLINK_FADEIN) { // BLINK_xHZ
+    } else if (blink->mode >= BLINK_PULSE1HZ) {
+      if (blink->mode <= BLINK_PULSE8HZ) { // BLINK_PULSExHZ
         if (duty)
-          ledc_fade(0, blink->bright, false, 1, LEDC_PULSE - 1, blink->bright);
+          ledc_fade(0, blink->bright, false, 1, LEDC_PULSE, blink->bright);
         else
-          ledc_fade(0, 0, true, 1, 1000 / (1 << (blink->mode - BLINK_1HZ)) - LEDC_PULSE - 1, blink->bright);
+          ledc_fade(0, 0, true, 1, 1000 / (1 << (blink->mode - BLINK_PULSE1HZ)) - LEDC_PULSE, blink->bright);
+      } else if (blink->mode <= BLINK_TOGGLE8HZ) { // BLINK_TOGGLExHZ
+        if (duty)
+          ledc_fade(0, blink->bright, false, 1, 500 / (1 << (blink->mode - BLINK_TOGGLE1HZ)), blink->bright);
+        else
+          ledc_fade(0, 0, true, 1, 500 / (1 << (blink->mode - BLINK_TOGGLE1HZ)), blink->bright);
       } else if (blink->mode == BLINK_FADEIN) {
         ledc_fade(0, 0, true, blink->bright, LEDC_FADETIME / blink->bright, 1);
       } else if (blink->mode == BLINK_FADEOUT) {
@@ -276,8 +287,10 @@ void blink_update(uint8_t mode, uint16_t bright) {
     } else if (mode == BLINK_ON) {
       ledc_write(0, bright);
     } else {
-      if ((mode >= BLINK_1HZ) && (mode <= BLINK_8HZ)) {
-        ledc_fade(0, bright, false, 1, LEDC_PULSE - 1, bright);
+      if ((mode >= BLINK_PULSE1HZ) && (mode <= BLINK_PULSE8HZ)) {
+        ledc_fade(0, bright, false, 1, LEDC_PULSE, bright);
+      } else if ((mode >= BLINK_TOGGLE1HZ) && (mode <= BLINK_TOGGLE8HZ)) {
+        ledc_fade(0, bright, false, 1, 500 / (1 << (mode - BLINK_TOGGLE1HZ)), bright);
       } else if ((mode == BLINK_FADEIN) || (mode == BLINK_BREATH)) {
         ledc_fade(0, 0, true, bright, LEDC_FADETIME / bright, 1);
       } else if (mode == BLINK_FADEOUT) {
